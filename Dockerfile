@@ -1,29 +1,10 @@
-# syntax=docker/dockerfile:1
-
-# Simple Example Build Command:
-# docker build \
-# --tag crocodilestick/calibre-web-automated:dev \
-# --build-arg="BUILD_DATE=27-09-2024 12:06" \
-# --build-arg="VERSION=2.1.0-test-5" .
-
-# Good guide on how to set up a buildx builder here:
-# https://a-berahman.medium.com/simplifying-docker-multiplatform-builds-with-buildx-3d7efd670f58
-
-# Multi-Platform Example Build & Push Command:
-# docker buildx build \
-# --push \
-# --platform linux/amd64,linux/arm64, \
-# --build-arg="BUILD_DATE=02-08-2024 20:52" \
-# --build-arg="VERSION=2.1.0" \
-# --tag crocodilestick/calibre-web-automated:latest .
-
 # ==========================================================================
 # STAGE 1: Dependencies - Install system packages and Python dependencies
 # ==========================================================================
 ARG CALIBRE_RELEASE=9.1.0
 ARG KEPUBIFY_RELEASE=v4.0.4
 
-FROM ghcr.io/linuxserver/baseimage-ubuntu:noble AS dependencies
+FROM debian:trixie-slim AS dependencies
 
 ARG CALIBRE_RELEASE
 ARG KEPUBIFY_RELEASE
@@ -101,8 +82,8 @@ RUN \
 
 # STEP 2 - Set up Python virtual environment
 RUN \
-  python3.13 -m venv /lsiopy && \
-  /lsiopy/bin/pip install -U --no-cache-dir \
+  python3.13 -m venv /venv && \
+  /venv/bin/pip install -U --no-cache-dir \
   pip \
   wheel
 
@@ -111,13 +92,8 @@ RUN \
 COPY --chown=abc:abc requirements.txt optional-requirements.txt /app/calibre-web-automated/
 
 RUN \
-  # STEP 3.1 - Installing the required python packages listed in 'requirements.txt' and 'optional-requirements.txt'
-  # HOWEVER, they are not pulled from PyPi directly, they are pulled from linuxserver's Ubuntu Wheel Index
-  # This is essentially a repository of precompiled some of the most popular packages with C/C++ source code
-  # This provides the install maximum compatibility with multiple different architectures including: x86_64, armv71 and aarch64
-  # You can read more about python wheels here: https://realpython.com/python-wheels/
-  /lsiopy/bin/pip install -U --no-cache-dir --find-links https://wheel-index.linuxserver.io/ubuntu/ -r \
-  /app/calibre-web-automated/requirements.txt -r /app/calibre-web-automated/optional-requirements.txt
+  /venv/bin/pip install -U --no-cache-dir -r /app/calibre-web-automated/requirements.txt \
+  -r /app/calibre-web-automated/optional-requirements.txt
 
 # STEP 4 - Install kepubify
 RUN \
@@ -163,10 +139,7 @@ RUN \
 # ============================================================================
 # STAGE 2: Final - Build the final runtime image
 # ============================================================================
-FROM ghcr.io/linuxserver/baseimage-ubuntu:noble AS unrar-stage
-FROM ghcr.io/linuxserver/unrar:latest AS unrar
-
-FROM ghcr.io/linuxserver/baseimage-ubuntu:noble
+FROM debian:trixie-slim
 
 ARG BUILD_DATE
 ARG VERSION
@@ -181,7 +154,7 @@ LABEL maintainer="CrocodileStick"
 SHELL ["/bin/bash", "-c"]
 
 # Copy installed dependencies from the dependencies stage
-COPY --from=dependencies /lsiopy /lsiopy
+COPY --from=dependencies /venv /venv
 COPY --from=dependencies /usr/bin/kepubify /usr/bin/kepubify
 COPY --from=dependencies /app/calibre /app/calibre
 COPY --from=dependencies /usr/bin/lsof /usr/bin/lsof
@@ -226,6 +199,7 @@ RUN \
   libxdamage1 \
   libgl1 \
   libglx-mesa0 \
+  unrar \
   xz-utils \
   curl && \
   # Create python3 symlink to point to python3.13
@@ -281,9 +255,6 @@ RUN \
   echo "$VERSION" >| /app/CWA_RELEASE && \
   echo "$KEPUBIFY_RELEASE" >| /app/KEPUBIFY_RELEASE && \
   echo "$CALIBRE_RELEASE" > /CALIBRE_RELEASE
-
-# Add unrar from unrar stage
-COPY --from=unrar /usr/bin/unrar-ubuntu /usr/bin/unrar
 
 # Set calibre environment variable
 ENV CALIBRE_CONFIG_DIR=/config/.config/calibre
