@@ -119,7 +119,7 @@ RUN groupadd -g 1000 calibre \
 # Copy built artifacts
 COPY --from=dependencies /venv /venv
 COPY --from=dependencies /usr/bin/kepubify /usr/bin/kepubify
-COPY --from=dependencies /app/calibre /app/calibre
+COPY --chown=calibre:calibre --from=dependencies /app/calibre /app/calibre
 COPY --from=dependencies /usr/bin/lsof /usr/bin/lsof
 
 # Base certs
@@ -199,10 +199,9 @@ RUN   chmod +x /app/calibre-web-automated/scripts/setup-cwa.sh && \
  && echo "$KEPUBIFY_RELEASE" >| /app/KEPUBIFY_RELEASE \
  && echo "$CALIBRE_RELEASE" > /CALIBRE_RELEASE
 
-ENV CALIBRE_DBPATH=/config \
-    CALIBRE_CONFIG_DIR=/config/.config/calibre \
-    PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
+ENV CALIBRE_CONFIG_DIR=/config/.config/calibre
+    
+WORKDIR /config
 
 EXPOSE 8083
 VOLUME /config
