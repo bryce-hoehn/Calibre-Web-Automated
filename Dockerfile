@@ -120,7 +120,6 @@ RUN groupadd -g 1000 calibre \
 COPY --from=dependencies /venv /venv
 COPY --from=dependencies /usr/bin/kepubify /usr/bin/kepubify
 COPY --chown=calibre:calibre --from=dependencies /app/calibre /app/calibre
-COPY --from=dependencies /usr/bin/lsof /usr/bin/lsof
 
 # Base certs
 RUN apt-get update \
@@ -161,6 +160,7 @@ RUN apt-get update \
       libxdamage1 \
       libgl1 \
       libglx-mesa0 \
+      lsof \
       unrar-free \
       xz-utils \
       curl \
@@ -210,7 +210,7 @@ VOLUME /calibre-library
 
 USER calibre
 
-CMD ["/venv/bin/python", "cps.py"]
+CMD ["/venv/bin/python", "/app/calibre-web-automated/cps.py"]
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=120s --retries=3 \
   CMD curl -f http://localhost:${CWA_PORT_OVERRIDE:-8083}/ || curl -f -k https://localhost:${CWA_PORT_OVERRIDE:-8083}/ || exit 1
