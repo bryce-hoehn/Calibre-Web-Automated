@@ -16,6 +16,7 @@ from sqlalchemy import exists
 from cryptography.fernet import Fernet
 import cryptography.exceptions
 from base64 import urlsafe_b64decode
+
 try:
     # Compatibility with sqlalchemy 2.0
     from sqlalchemy.orm import declarative_base
@@ -31,7 +32,7 @@ _Base = declarative_base()
 
 
 class _Flask_Settings(_Base):
-    __tablename__ = 'flask_settings'
+    __tablename__ = "flask_settings"
 
     id = Column(Integer, primary_key=True)
     flask_session_key = Column(BLOB, default=b"")
@@ -44,17 +45,17 @@ class _Flask_Settings(_Base):
 # Baseclass for representing settings in app.db with email server settings and Calibre database settings
 # (application settings)
 class _Settings(_Base):
-    __tablename__ = 'settings'
+    __tablename__ = "settings"
 
     id = Column(Integer, primary_key=True)
     mail_server = Column(String, default=constants.DEFAULT_MAIL_SERVER)
     mail_port = Column(Integer, default=25)
     mail_use_ssl = Column(SmallInteger, default=0)
-    mail_login = Column(String, default='mail@example.com')
+    mail_login = Column(String, default="mail@example.com")
     mail_password_e = Column(String)
     mail_password = Column(String)
-    mail_from = Column(String, default='automailer <mail@example.com>')
-    mail_size = Column(Integer, default=25*1024*1024)
+    mail_from = Column(String, default="automailer <mail@example.com>")
+    mail_size = Column(Integer, default=25 * 1024 * 1024)
     mail_server_type = Column(SmallInteger, default=0)
     mail_gmail_token = Column(JSON, default={})
 
@@ -65,15 +66,17 @@ class _Settings(_Base):
     config_external_port = Column(Integer, default=constants.DEFAULT_PORT)
     config_certfile = Column(String)
     config_keyfile = Column(String)
-    config_trustedhosts = Column(String, default='')
-    config_calibre_web_title = Column(String, default='Calibre-Web Automated')
+    config_trustedhosts = Column(String, default="")
+    config_calibre_web_title = Column(String, default="Calibre-Web Automated")
     config_books_per_page = Column(Integer, default=60)
     config_random_books = Column(Integer, default=4)
     config_authors_max = Column(Integer, default=0)
     config_read_column = Column(Integer, default=0)
-    config_title_regex = Column(String,
-                                default=r'^(A|The|An|Der|Die|Das|Den|Ein|Eine'
-                                        r'|Einen|Dem|Des|Einem|Eines|Le|La|Les|L\'|Un|Une)\s+')
+    config_title_regex = Column(
+        String,
+        default=r"^(A|The|An|Der|Die|Das|Den|Ein|Eine"
+        r"|Einen|Dem|Des|Einem|Eines|Le|La|Les|L\'|Un|Une)\s+",
+    )
     config_theme = Column(Integer, default=1)
 
     config_log_level = Column(SmallInteger, default=logger.DEFAULT_LOG_LEVEL)
@@ -91,7 +94,7 @@ class _Settings(_Base):
     config_kobo_sync_magic_shelves = Column(Boolean, default=False)
 
     # Sync read progress to Hardcover - should this be renamed?
-    config_hardcover_sync = Column(Boolean, default=False) 
+    config_hardcover_sync = Column(Boolean, default=False)
     # Sync annotations to Hardcover
     config_hardcover_annotations_sync = Column(Boolean, default=False)
 
@@ -114,36 +117,42 @@ class _Settings(_Base):
     config_use_goodreads = Column(Boolean, default=False)
     config_goodreads_api_key = Column(String)
     config_hardcover_token = Column(String)
-    
+
     config_register_email = Column(Boolean, default=False)
     config_login_type = Column(Integer, default=0)
 
     config_kobo_proxy = Column(Boolean, default=False)
 
-    config_ldap_provider_url = Column(String, default='example.org')
+    config_ldap_provider_url = Column(String, default="example.org")
     config_ldap_port = Column(SmallInteger, default=389)
-    config_ldap_authentication = Column(SmallInteger, default=constants.LDAP_AUTH_SIMPLE)
-    config_ldap_serv_username = Column(String, default='cn=admin,dc=example,dc=org')
+    config_ldap_authentication = Column(
+        SmallInteger, default=constants.LDAP_AUTH_SIMPLE
+    )
+    config_ldap_serv_username = Column(String, default="cn=admin,dc=example,dc=org")
     config_ldap_serv_password_e = Column(String)
     config_ldap_serv_password = Column(String)
     config_ldap_encryption = Column(SmallInteger, default=0)
     config_ldap_cacert_path = Column(String, default="")
     config_ldap_cert_path = Column(String, default="")
     config_ldap_key_path = Column(String, default="")
-    config_ldap_dn = Column(String, default='dc=example,dc=org')
-    config_ldap_user_object = Column(String, default='uid=%s')
-    config_ldap_member_user_object = Column(String, default='')
+    config_ldap_dn = Column(String, default="dc=example,dc=org")
+    config_ldap_user_object = Column(String, default="uid=%s")
+    config_ldap_member_user_object = Column(String, default="")
     config_ldap_openldap = Column(Boolean, default=True)
-    config_ldap_group_object_filter = Column(String, default='(&(objectclass=posixGroup)(cn=%s))')
-    config_ldap_group_members_field = Column(String, default='memberUid')
-    config_ldap_group_name = Column(String, default='calibreweb')
+    config_ldap_group_object_filter = Column(
+        String, default="(&(objectclass=posixGroup)(cn=%s))"
+    )
+    config_ldap_group_members_field = Column(String, default="memberUid")
+    config_ldap_group_name = Column(String, default="calibreweb")
 
     config_kepubifypath = Column(String, default=None)
     config_converterpath = Column(String, default=None)
     config_binariesdir = Column(String, default=None)
     config_calibre = Column(String)
     config_rarfile_location = Column(String, default=None)
-    config_upload_formats = Column(String, default=','.join(constants.EXTENSIONS_UPLOAD))
+    config_upload_formats = Column(
+        String, default=",".join(constants.EXTENSIONS_UPLOAD)
+    )
     config_unicode_filename = Column(Boolean, default=False)
     config_embed_metadata = Column(Boolean, default=True)
 
@@ -153,7 +162,7 @@ class _Settings(_Base):
     config_allow_reverse_proxy_header_login = Column(Boolean, default=False)
     config_reverse_proxy_auto_create_users = Column(Boolean, default=False)
     config_ldap_auto_create_users = Column(Boolean, default=True)
-    config_oauth_redirect_host = Column(String, default='')
+    config_oauth_redirect_host = Column(String, default="")
     config_disable_standard_login = Column(Boolean, default=False)
     config_enable_oauth_group_admin_management = Column(Boolean, default=True)
 
@@ -201,14 +210,22 @@ class ConfigSQL(object):
         change = False
 
         # Fallback auto-detect: if calibre library not configured but default metadata.db exists, set it
-        if (not self.config_calibre_dir or not os.path.isfile(os.path.join(self.config_calibre_dir, 'metadata.db'))):
-            fallback_db = '/calibre-library/metadata.db'
+        if not self.config_calibre_dir or not os.path.isfile(
+            os.path.join(self.config_calibre_dir, "metadata.db")
+        ):
+            fallback_db = "/calibre-library/metadata.db"
             if os.path.isfile(fallback_db):
                 detected_dir = os.path.dirname(fallback_db)
                 if not self.config_calibre_dir:
-                    log.info("[autoconfig] Detected calibre library at %s (fallback)", detected_dir)
+                    log.info(
+                        "[autoconfig] Detected calibre library at %s (fallback)",
+                        detected_dir,
+                    )
                 else:
-                    log.info("[autoconfig] Existing configured path invalid, switching to detected library at %s", detected_dir)
+                    log.info(
+                        "[autoconfig] Existing configured path invalid, switching to detected library at %s",
+                        detected_dir,
+                    )
                 self.config_calibre_dir = detected_dir
                 change = True
 
@@ -216,18 +233,20 @@ class ConfigSQL(object):
         if not self.config_binariesdir:
             change = True
             self.config_binariesdir = autodetect_calibre_binaries()
-            self.config_converterpath = autodetect_converter_binary(self.config_binariesdir)
+            self.config_converterpath = autodetect_converter_binary(
+                self.config_binariesdir
+            )
 
         # Autodetect Kepubify if not configured or empty string
         if not self.config_kepubifypath:
             change = True
             self.config_kepubifypath = autodetect_kepubify_binary()
 
-        # Autodetect UnRar if not configured or empty string
+        # Autodetect unar if not configured or empty string
         # (empty string can occur from failed previous autodetection or manual clearing)
         if not self.config_rarfile_location:
             change = True
-            self.config_rarfile_location = autodetect_unrar_binary()
+            self.config_rarfile_location = autodetect_unar_binary()
         if change:
             self.save()
 
@@ -311,16 +330,23 @@ class ConfigSQL(object):
         return logger.get_level_name(self.config_log_level)
 
     def get_mail_settings(self):
-        return {k: v for k, v in self.__dict__.items() if k.startswith('mail_')}
+        return {k: v for k, v in self.__dict__.items() if k.startswith("mail_")}
 
     def get_mail_server_configured(self):
-        return bool((self.mail_server != constants.DEFAULT_MAIL_SERVER and self.mail_server_type == 0)
-                    or (self.mail_gmail_token != {} and self.mail_server_type == 1))
+        return bool(
+            (
+                self.mail_server != constants.DEFAULT_MAIL_SERVER
+                and self.mail_server_type == 0
+            )
+            or (self.mail_gmail_token != {} and self.mail_server_type == 1)
+        )
 
     def get_scheduled_task_settings(self):
-        return {k: v for k, v in self.__dict__.items() if k.startswith('schedule_')}
+        return {k: v for k, v in self.__dict__.items() if k.startswith("schedule_")}
 
-    def set_from_dictionary(self, dictionary, field, convertor=None, default=None, encode=None):
+    def set_from_dictionary(
+        self, dictionary, field, convertor=None, default=None, encode=None
+    ):
         """Possibly updates a field of this object.
         The new value, if present, is grabbed from the given dictionary, and optionally passed through a convertor.
 
@@ -331,7 +357,9 @@ class ConfigSQL(object):
             return False
 
         if field not in self.__dict__:
-            log.warning("_ConfigSQL trying to set unknown field '%s' = %r", field, new_value)
+            log.warning(
+                "_ConfigSQL trying to set unknown field '%s' = %r", field, new_value
+            )
             return False
 
         if convertor is not None:
@@ -350,7 +378,12 @@ class ConfigSQL(object):
     def to_dict(self):
         storage = {}
         for k, v in self.__dict__.items():
-            if k[0] != '_' and not k.endswith("_e") and k != "cli" and 'api' not in k.lower():
+            if (
+                k[0] != "_"
+                and not k.endswith("_e")
+                and k != "cli"
+                and "api" not in k.lower()
+            ):
                 storage[k] = v
         return storage
 
@@ -358,7 +391,7 @@ class ConfigSQL(object):
         """Load all configuration values from the underlying storage."""
         s = self._read_from_storage()  # type: _Settings
         for k, v in s.__dict__.items():
-            if k[0] != '_':
+            if k[0] != "_":
                 if v is None:
                     # if the storage column has no value, apply the (possible) default
                     column = s.__class__.__dict__.get(k)
@@ -380,31 +413,37 @@ class ConfigSQL(object):
                 self._session.merge(s)
                 self._session.commit()
             except OperationalError as e:
-                log.error('Database error: %s', e)
+                log.error("Database error: %s", e)
                 self._session.rollback()
 
         have_metadata_db = bool(self.config_calibre_dir)
         if have_metadata_db:
-            db_file = os.path.join(self.config_calibre_dir, 'metadata.db')
+            db_file = os.path.join(self.config_calibre_dir, "metadata.db")
             have_metadata_db = os.path.isfile(db_file)
         self.db_configured = have_metadata_db
-        
+
         from . import cli_param
-        if os.environ.get('FLASK_DEBUG'):
+
+        if os.environ.get("FLASK_DEBUG"):
             logfile = logger.setup(logger.LOG_TO_STDOUT, logger.logging.DEBUG)
         else:
             # pylint: disable=access-member-before-definition
-            logfile = logger.setup(cli_param.logpath or self.config_logfile, self.config_log_level)
+            logfile = logger.setup(
+                cli_param.logpath or self.config_logfile, self.config_log_level
+            )
         if logfile != os.path.abspath(self.config_logfile):
             if logfile != os.path.abspath(cli_param.logpath):
-                log.warning("Log path %s not valid, falling back to default", self.config_logfile)
+                log.warning(
+                    "Log path %s not valid, falling back to default",
+                    self.config_logfile,
+                )
             self.config_logfile = logfile
             s.config_logfile = logfile
             self._session.merge(s)
             try:
                 self._session.commit()
             except OperationalError as e:
-                log.error('Database error: %s', e)
+                log.error("Database error: %s", e)
                 self._session.rollback()
         self.__dict__["dirty"] = list()
 
@@ -413,7 +452,7 @@ class ConfigSQL(object):
         s = self._read_from_storage()  # type: _Settings
 
         for k in self.dirty:
-            if k[0] == '_':
+            if k[0] == "_":
                 continue
             if hasattr(s, k):
                 if k.endswith("_e"):
@@ -426,7 +465,7 @@ class ConfigSQL(object):
         try:
             self._session.commit()
         except OperationalError as e:
-            log.error('Database error: %s', e)
+            log.error("Database error: %s", e)
             self._session.rollback()
         self.load()
 
@@ -438,10 +477,15 @@ class ConfigSQL(object):
         self.save()
 
     def get_book_path(self):
-        return self.config_calibre_split_dir if self.config_calibre_split else self.config_calibre_dir
+        return (
+            self.config_calibre_split_dir
+            if self.config_calibre_split
+            else self.config_calibre_dir
+        )
 
     def store_calibre_uuid(self, calibre_db, Library_table):
         from . import app
+
         try:
             with app.app_context():
                 calibre_uuid = calibre_db.session.query(Library_table).one_or_none()
@@ -461,17 +505,35 @@ def _encrypt_fields(session, secret_key):
         session.query(exists().where(_Settings.mail_password_e)).scalar()
     except OperationalError:
         with session.bind.connect() as conn:
-            conn.execute(text("ALTER TABLE settings ADD column 'mail_password_e' String"))
-            conn.execute(text("ALTER TABLE settings ADD column 'config_ldap_serv_password_e' String"))
+            conn.execute(
+                text("ALTER TABLE settings ADD column 'mail_password_e' String")
+            )
+            conn.execute(
+                text(
+                    "ALTER TABLE settings ADD column 'config_ldap_serv_password_e' String"
+                )
+            )
         session.commit()
         crypter = Fernet(secret_key)
-        settings = session.query(_Settings.mail_password, _Settings.config_ldap_serv_password).first()
+        settings = session.query(
+            _Settings.mail_password, _Settings.config_ldap_serv_password
+        ).first()
         if settings.mail_password:
             session.query(_Settings).update(
-                {_Settings.mail_password_e: crypter.encrypt(settings.mail_password.encode())})
+                {
+                    _Settings.mail_password_e: crypter.encrypt(
+                        settings.mail_password.encode()
+                    )
+                }
+            )
         if settings.config_ldap_serv_password:
             session.query(_Settings).update(
-                {_Settings.config_ldap_serv_password_e: crypter.encrypt(settings.config_ldap_serv_password.encode())})
+                {
+                    _Settings.config_ldap_serv_password_e: crypter.encrypt(
+                        settings.config_ldap_serv_password.encode()
+                    )
+                }
+            )
         session.commit()
 
 
@@ -481,7 +543,7 @@ def _migrate_table(session, orm_class, secret_key=None):
     changed = False
 
     for column_name, column in orm_class.__dict__.items():
-        if column_name[0] != '_':
+        if column_name[0] != "_":
             try:
                 session.query(column).first()
             except OperationalError as err:
@@ -499,10 +561,15 @@ def _migrate_table(session, orm_class, secret_key=None):
                     column_type = "JSON"
                 else:
                     column_type = column.type
-                alter_table = text("ALTER TABLE %s ADD COLUMN `%s` %s %s" % (orm_class.__tablename__,
-                                                                             column_name,
-                                                                             column_type,
-                                                                             column_default))
+                alter_table = text(
+                    "ALTER TABLE %s ADD COLUMN `%s` %s %s"
+                    % (
+                        orm_class.__tablename__,
+                        column_name,
+                        column_type,
+                        column_default,
+                    )
+                )
                 log.debug(alter_table)
                 session.execute(alter_table)
                 changed = True
@@ -519,25 +586,33 @@ def _migrate_table(session, orm_class, secret_key=None):
 
 def autodetect_calibre_binaries():
     if sys.platform == "win32":
-        calibre_path = ["C:\\program files\\calibre\\",
-                        "C:\\program files(x86)\\calibre\\",
-                        "C:\\program files(x86)\\calibre2\\",
-                        "C:\\program files\\calibre2\\"]
+        calibre_path = [
+            "C:\\program files\\calibre\\",
+            "C:\\program files(x86)\\calibre\\",
+            "C:\\program files(x86)\\calibre2\\",
+            "C:\\program files\\calibre2\\",
+        ]
     elif sys.platform.startswith("freebsd"):
         calibre_path = ["/usr/local/bin/"]
     else:
         calibre_path = ["/opt/calibre/"]
     for element in calibre_path:
-        supported_binary_paths = [os.path.join(element, binary)
-                                  for binary in constants.SUPPORTED_CALIBRE_BINARIES.values()]
-        if all(os.path.isfile(binary_path) and os.access(binary_path, os.X_OK)
-               for binary_path in supported_binary_paths):
-            values = [process_wait([binary_path, "--version"],
-                                   pattern=r'\(calibre (.*)\)') for binary_path in supported_binary_paths]
+        supported_binary_paths = [
+            os.path.join(element, binary)
+            for binary in constants.SUPPORTED_CALIBRE_BINARIES.values()
+        ]
+        if all(
+            os.path.isfile(binary_path) and os.access(binary_path, os.X_OK)
+            for binary_path in supported_binary_paths
+        ):
+            values = [
+                process_wait([binary_path, "--version"], pattern=r"\(calibre (.*)\)")
+                for binary_path in supported_binary_paths
+            ]
             if all(values):
                 version = values[0].group(1)
                 log.debug("calibre version %s", version)
-                return element 
+                return element
     return ""
 
 
@@ -546,19 +621,25 @@ def autodetect_converter_binary(calibre_path):
         converter_path = os.path.join(calibre_path, "ebook-convert.exe")
     else:
         converter_path = os.path.join(calibre_path, "ebook-convert")
-    if calibre_path and os.path.isfile(converter_path) and os.access(converter_path, os.X_OK):
+    if (
+        calibre_path
+        and os.path.isfile(converter_path)
+        and os.access(converter_path, os.X_OK)
+    ):
         return converter_path
     return ""
 
 
-def autodetect_unrar_binary():
+def autodetect_unar_binary():
     if sys.platform == "win32":
-        calibre_path = ["C:\\program files\\WinRar\\unRAR.exe",
-                        "C:\\program files(x86)\\WinRar\\unRAR.exe"]
+        calibre_path = [
+            "C:\\program files\\WinRar\\unar.exe",
+            "C:\\program files(x86)\\WinRar\\unar.exe",
+        ]
     elif sys.platform.startswith("freebsd"):
-        calibre_path = ["/usr/local/bin/unrar"]
+        calibre_path = ["/usr/local/bin/unar"]
     else:
-        calibre_path = ["/usr/bin/unrar"]
+        calibre_path = ["/usr/bin/unar"]
     for element in calibre_path:
         if os.path.isfile(element) and os.access(element, os.X_OK):
             return element
@@ -567,12 +648,17 @@ def autodetect_unrar_binary():
 
 def autodetect_kepubify_binary():
     if sys.platform == "win32":
-        calibre_path = ["C:\\program files\\kepubify\\kepubify-windows-64Bit.exe",
-                        "C:\\program files(x86)\\kepubify\\kepubify-windows-64Bit.exe"]
+        calibre_path = [
+            "C:\\program files\\kepubify\\kepubify-windows-64Bit.exe",
+            "C:\\program files(x86)\\kepubify\\kepubify-windows-64Bit.exe",
+        ]
     elif sys.platform.startswith("freebsd"):
         calibre_path = ["/usr/local/bin/kepubify"]
     else:
-        calibre_path = ["/opt/kepubify/kepubify-linux-64bit", "/opt/kepubify/kepubify-linux-32bit"]
+        calibre_path = [
+            "/opt/kepubify/kepubify-linux-64bit",
+            "/opt/kepubify/kepubify-linux-32bit",
+        ]
     for element in calibre_path:
         if os.path.isfile(element) and os.access(element, os.X_OK):
             return element

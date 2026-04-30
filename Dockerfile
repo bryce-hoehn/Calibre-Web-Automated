@@ -117,7 +117,7 @@ RUN apt-get update \
       libgl1 \
       libglx-mesa0 \
       lsof \
-      unrar-free \
+      unar \
       xz-utils \
       curl \
  && update-ca-certificates \
