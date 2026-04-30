@@ -36,6 +36,7 @@ RUN apt-get update \
       libsasl2-2 \
       libxi6 \
       libxslt1.1 \
+      lsof \
       xdg-utils \
       inotify-tools \
       python3 \
@@ -63,20 +64,6 @@ RUN apt-get update \
       xz-utils \
       binutils \
  && rm -rf /var/lib/apt/lists/*
-
-# Install lsof 4.99.5 from source to fix hanging issue with 4.95 (issue #654)
-RUN echo "**** install lsof 4.99.5 from source ****" \
- && LSOF_VERSION="4.99.5" \
- && curl -L "https://github.com/lsof-org/lsof/archive/${LSOF_VERSION}.tar.gz" -o /tmp/lsof.tar.gz \
- && cd /tmp \
- && tar -xzf lsof.tar.gz \
- && cd "lsof-${LSOF_VERSION}" \
- && ./Configure -n linux \
- && make \
- && cp lsof /usr/bin/lsof \
- && chmod 755 /usr/bin/lsof \
- && cd / \
- && rm -rf /tmp/lsof*
 
 # Python virtual environment
 RUN python3 -m venv /venv \
