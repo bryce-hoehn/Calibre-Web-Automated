@@ -4,7 +4,7 @@
 ARG CALIBRE_RELEASE=9.1.0
 ARG KEPUBIFY_RELEASE=v4.0.4
 
-FROM debian:bookworm-slim AS dependencies
+FROM debian:trixie-slim AS dependencies
 
 ARG CALIBRE_RELEASE
 ARG KEPUBIFY_RELEASE
@@ -112,7 +112,7 @@ RUN mkdir -p /app/calibre \
 # =============================================================================
 # STAGE 2: Final - Runtime image
 # =============================================================================
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 ARG BUILD_DATE
 ARG VERSION
