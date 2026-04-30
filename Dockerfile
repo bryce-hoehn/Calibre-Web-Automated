@@ -12,57 +12,19 @@ ARG KEPUBIFY_RELEASE
 # Use bash for RUN instructions
 SHELL ["/bin/bash", "-c"]
 
-# Base certs
+# Install build-only packages (runtime packages go in the final stage)
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ca-certificates \
- && update-ca-certificates \
- && rm -rf /var/lib/apt/lists/*
-
-# Install build + runtime packages needed to build wheels and run app
-RUN apt-get update \
- && echo "**** install build packages ****" \
  && apt-get install -y --no-install-recommends \
+      ca-certificates \
       build-essential \
       libldap2-dev \
       libsasl2-dev \
-      gettext \
-      curl \
- && echo "**** install runtime packages ****" \
- && apt-get install -y --no-install-recommends \
-      imagemagick \
-      ghostscript \
-      libldap2 \
-      libmagic1 \
-      libsasl2-2 \
-      libxi6 \
-      libxslt1.1 \
-      lsof \
-      xdg-utils \
-      inotify-tools \
       python3 \
       python3-venv \
       python3-dev \
-      nano \
-      sqlite3 \
-      zip \
- && echo "**** install additional Calibre runtime packages ****" \
- && apt-get install -y --no-install-recommends \
-      libxtst6 \
-      libxrandr2 \
-      libxkbfile1 \
-      libxcomposite1 \
-      libxcursor1 \
-      libxfixes3 \
-      libxrender1 \
-      libopengl0 \
-      libnss3 \
-      libxkbcommon0 \
-      libegl1 \
-      libxdamage1 \
-      libgl1 \
-      libglx-mesa0 \
+      curl \
       xz-utils \
-      binutils \
+ && update-ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
 # Python virtual environment
@@ -121,16 +83,10 @@ COPY --from=dependencies /venv /venv
 COPY --from=dependencies /usr/bin/kepubify /usr/bin/kepubify
 COPY --chown=calibre:calibre --from=dependencies /app/calibre /app/calibre
 
-# Base certs
+# Runtime packages (single layer: certs + app deps + Calibre GUI deps)
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ca-certificates \
- && update-ca-certificates \
- && rm -rf /var/lib/apt/lists/*
-
-# Runtime packages only
-RUN apt-get update \
- && echo "**** install runtime packages ****" \
  && apt-get install -y --no-install-recommends \
+      ca-certificates \
       imagemagick \
       ghostscript \
       libldap2 \
@@ -164,6 +120,7 @@ RUN apt-get update \
       unrar-free \
       xz-utils \
       curl \
+ && update-ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
 # App code
