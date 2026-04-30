@@ -158,7 +158,8 @@ RUN   chmod +x /app/calibre-web-automated/scripts/setup-cwa.sh && \
  && echo "$KEPUBIFY_RELEASE" >| /app/KEPUBIFY_RELEASE \
  && echo "$CALIBRE_RELEASE" > /CALIBRE_RELEASE
 
-ENV CALIBRE_CONFIG_DIR=/config/.config/calibre
+ENV CALIBRE_DBPATH=/config \
+    CALIBRE_CONFIG_DIR=/config/.config/calibre
     
 WORKDIR /config
 
