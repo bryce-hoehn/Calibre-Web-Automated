@@ -129,6 +129,8 @@ COPY --chown=calibre:calibre . ./
 
 # Configure application (build-time)
 RUN   chmod +x /app/calibre-web-automated/scripts/setup-cwa.sh && \
+ chmod +x /app/calibre-web-automated/scripts/services/*.sh && \
+ /app/calibre/calibre_postinstall && \
  /app/calibre-web-automated/scripts/setup-cwa.sh && \
  echo "~~~~ Creating koplugin.zip from KOReader plugin folder... ~~~~" \
  && if [ -d "/app/calibre-web-automated/koreader/plugins/cwasync.koplugin" ]; then \
