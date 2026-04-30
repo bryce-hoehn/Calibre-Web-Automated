@@ -155,7 +155,6 @@ RUN apt-get update \
       xdg-utils \
       inotify-tools \
       python3 \
-      # python3-venv \
       nano \
       sqlite3 \
       zip \
@@ -185,7 +184,9 @@ WORKDIR /app/calibre-web-automated
 COPY --chown=calibre:calibre . ./
 
 # Configure application (build-time)
-RUN echo "~~~~ Creating koplugin.zip from KOReader plugin folder... ~~~~" \
+RUN   chmod +x /app/calibre-web-automated/scripts/setup-cwa.sh && \
+ /app/calibre-web-automated/scripts/setup-cwa.sh && \
+ echo "~~~~ Creating koplugin.zip from KOReader plugin folder... ~~~~" \
  && if [ -d "/app/calibre-web-automated/koreader/plugins/cwasync.koplugin" ]; then \
       cd /app/calibre-web-automated/koreader/plugins; \
       echo "Calculating digest of plugin files..."; \
