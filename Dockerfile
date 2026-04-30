@@ -31,7 +31,7 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       imagemagick \
       ghostscript \
-      libldap-2.5-0 \
+      libldap2 \
       libmagic1 \
       libsasl2-2 \
       libxi6 \
@@ -147,7 +147,7 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       imagemagick \
       ghostscript \
-      libldap-2.5-0 \
+      libldap2 \
       libmagic1 \
       libsasl2-2 \
       libxi6 \
