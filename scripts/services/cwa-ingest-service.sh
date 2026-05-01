@@ -123,9 +123,13 @@ fi
     done
 ) &
 
-# Main inotifywait loop with fallback
-(
-    set -o pipefail
-    inotifywait -m -r --format="%e %w%f" -e close_write -e moved_to "$WATCH_FOLDER" |
-    while read -r events filepath; do handle_event "$filepath"; done
-) || run_fallback
+# Main inotifywait loop with fallback and automatic restart
+while true; do
+    (
+        set -o pipefail
+        inotifywait -m -r --format="%e %w%f" -e close_write -e moved_to "$WATCH_FOLDER" |
+        while read -r events filepath; do handle_event "$filepath"; done
+    ) || run_fallback
+    echo "[cwa-ingest-service] Watcher exited, restarting in 5 seconds..." >&2
+    sleep 5
+done

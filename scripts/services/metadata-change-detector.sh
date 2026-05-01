@@ -32,11 +32,16 @@ if echo "$OSR" | grep -qi 'microsoft\|linuxkit'; then
     run_fallback; exit 0
 fi
 
-(
-    set -o pipefail
-    inotifywait -m -e close_write -e moved_to --exclude '^.*\.(swp)$' "$WATCH_FOLDER" |
-    while read -r directory events filename; do
-        echo "[metadata-change-detector] New file detected: $filename"
-        python3 "$APP_DIR/scripts/cover_enforcer.py" "--log" "$filename"
-    done
-) || run_fallback
+# Main inotifywait loop with fallback and automatic restart
+while true; do
+    (
+        set -o pipefail
+        inotifywait -m -e close_write -e moved_to --exclude '^.*\.(swp)$' "$WATCH_FOLDER" |
+        while read -r directory events filename; do
+            echo "[metadata-change-detector] New file detected: $filename"
+            python3 "$APP_DIR/scripts/cover_enforcer.py" "--log" "$filename"
+        done
+    ) || run_fallback
+    echo "[metadata-change-detector] Watcher exited, restarting in 5 seconds..." >&2
+    sleep 5
+done
