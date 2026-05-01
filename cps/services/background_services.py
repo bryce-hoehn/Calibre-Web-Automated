@@ -39,9 +39,29 @@ def _popen(script_name):
 
 
 def _cleanup(_signum=None, _frame=None):
+    """Terminate all managed subprocesses gracefully, then force-kill stragglers."""
+    # Send SIGTERM to every process group
     for p in _processes:
         try:
             os.killpg(os.getpgid(p.pid), signal.SIGTERM)
+        except Exception:
+            pass
+
+    # Give processes up to 5 seconds to exit gracefully
+    gone, alive = [], list(_processes)
+    deadline = time.monotonic() + 5
+    while alive and time.monotonic() < deadline:
+        for p in alive:
+            if p.poll() is not None:
+                gone.append(p)
+        alive = [p for p in alive if p not in gone]
+        if alive:
+            time.sleep(0.1)
+
+    # Force-kill anything still running
+    for p in alive:
+        try:
+            os.killpg(os.getpgid(p.pid), signal.SIGKILL)
         except Exception:
             pass
 
