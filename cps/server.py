@@ -19,7 +19,8 @@ try:
     from gevent import __version__ as _version
     from greenlet import GreenletExit
     import ssl
-    VERSION = 'Gevent ' + _version
+
+    VERSION = "Gevent " + _version
     _GEVENT = True
 except ImportError:
     from .tornado_wsgi import MyWSGIContainer
@@ -27,19 +28,19 @@ except ImportError:
     from tornado.ioloop import IOLoop
     from tornado import netutil
     from tornado import version as _version
-    VERSION = 'Tornado ' + _version
+
+    VERSION = "Tornado " + _version
     _GEVENT = False
 
 from . import logger, constants
-
 
 log = logger.create()
 
 
 def _readable_listen_address(address, port):
-    if ':' in address:
+    if ":" in address:
         address = "[" + address + "]"
-    return '%s:%s' % (address, port)
+    return "%s:%s" % (address, port)
 
 
 class WebServer(object):
@@ -64,15 +65,24 @@ class WebServer(object):
 
         if config.config_access_log:
             log_name = "gevent.access" if _GEVENT else "tornado.access"
-            formatter = logger.ACCESS_FORMATTER_GEVENT if _GEVENT else logger.ACCESS_FORMATTER_TORNADO
-            self.access_logger, logfile = logger.create_access_log(config.config_access_logfile, log_name, formatter)
+            formatter = (
+                logger.ACCESS_FORMATTER_GEVENT
+                if _GEVENT
+                else logger.ACCESS_FORMATTER_TORNADO
+            )
+            self.access_logger, logfile = logger.create_access_log(
+                config.config_access_logfile, log_name, formatter
+            )
             if logfile != config.config_access_logfile:
-                log.warning("Accesslog path %s not valid, falling back to default", config.config_access_logfile)
+                log.warning(
+                    "Accesslog path %s not valid, falling back to default",
+                    config.config_access_logfile,
+                )
                 config.config_access_logfile = logfile
                 config.save()
         else:
             if not _GEVENT:
-                logger.get('tornado.access').disabled = True
+                logger.get("tornado.access").disabled = True
 
         certfile_path = config.get_config_certfile()
         keyfile_path = config.get_config_keyfile()
@@ -80,10 +90,12 @@ class WebServer(object):
             if os.path.isfile(certfile_path) and os.path.isfile(keyfile_path):
                 self.ssl_args = dict(certfile=certfile_path, keyfile=keyfile_path)
             else:
-                log.warning('The specified paths for the ssl certificate file and/or key file seem to be broken. '
-                            'Ignoring ssl.')
-                log.warning('Cert path: %s', certfile_path)
-                log.warning('Key path:  %s', keyfile_path)
+                log.warning(
+                    "The specified paths for the ssl certificate file and/or key file seem to be broken. "
+                    "Ignoring ssl."
+                )
+                log.warning("Cert path: %s", certfile_path)
+                log.warning("Key path:  %s", keyfile_path)
 
     @staticmethod
     def _make_gevent_socket_activated():
@@ -102,16 +114,20 @@ class WebServer(object):
         self.unix_socket_file = socket_file
 
     def _make_gevent_listener(self):
-        if os.name != 'nt':
+        if os.name != "nt":
             socket_activated = os.environ.get("LISTEN_FDS")
             if socket_activated:
                 sock = self._make_gevent_socket_activated()
                 sock_info = sock.getsockname()
-                return sock, "systemd-socket:" + _readable_listen_address(sock_info[0], sock_info[1])
+                return sock, "systemd-socket:" + _readable_listen_address(
+                    sock_info[0], sock_info[1]
+                )
             unix_socket_file = os.environ.get("CALIBRE_UNIX_SOCKET")
             if unix_socket_file:
                 self._prepare_unix_socket(unix_socket_file)
-                unix_sock = WSGIServer.get_listener(unix_socket_file, family=socket.AF_UNIX)
+                unix_sock = WSGIServer.get_listener(
+                    unix_socket_file, family=socket.AF_UNIX
+                )
                 # ensure current user and group have r/w permissions, no permissions for other users
                 # this way the socket can be shared in a semi-secure manner
                 # between the user running calibre-web and the user running the fronting webserver
@@ -120,21 +136,27 @@ class WebServer(object):
                 return unix_sock, "unix:" + unix_socket_file
 
         if self.listen_address:
-            return ((self.listen_address, self.listen_port),
-                    _readable_listen_address(self.listen_address, self.listen_port))
+            return (
+                (self.listen_address, self.listen_port),
+                _readable_listen_address(self.listen_address, self.listen_port),
+            )
 
-        if os.name == 'nt':
-            self.listen_address = '0.0.0.0'
-            return ((self.listen_address, self.listen_port),
-                    _readable_listen_address(self.listen_address, self.listen_port))
+        if os.name == "nt":
+            self.listen_address = "0.0.0.0"
+            return (
+                (self.listen_address, self.listen_port),
+                _readable_listen_address(self.listen_address, self.listen_port),
+            )
 
-        address = ('::', self.listen_port)
+        address = ("::", self.listen_port)
         try:
             sock = WSGIServer.get_listener(address, family=socket.AF_INET6)
         except socket.error as ex:
-            log.error('%s', ex)
-            log.warning('Unable to listen on {}, trying on IPv4 only...'.format(address))
-            address = ('', self.listen_port)
+            log.error("%s", ex)
+            log.warning(
+                "Unable to listen on {}, trying on IPv4 only...".format(address)
+            )
+            address = ("", self.listen_port)
             sock = WSGIServer.get_listener(address, family=socket.AF_INET)
 
         return sock, _readable_listen_address(*address)
@@ -166,12 +188,14 @@ class WebServer(object):
             if os.name == "nt":
                 # Windows entry points have ".exe" extension and should be
                 # called directly.
-                if not os.path.exists(py_script) and os.path.exists("{}.exe".format(py_script)):
+                if not os.path.exists(py_script) and os.path.exists(
+                    "{}.exe".format(py_script)
+                ):
                     py_script += ".exe"
 
                 if (
-                        os.path.splitext(sys.executable)[1] == ".exe"
-                        and os.path.splitext(py_script)[1] == ".exe"
+                    os.path.splitext(sys.executable)[1] == ".exe"
+                    and os.path.splitext(py_script)[1] == ".exe"
                 ):
                     rv.pop(0)
 
@@ -195,7 +219,7 @@ class WebServer(object):
                 rv.extend(("-m", py_module.lstrip(".")))
 
         rv.extend(args)
-        if os.name == 'nt':
+        if os.name == "nt":
             rv = ['"{}"'.format(a) for a in rv]
         return rv
 
@@ -204,17 +228,24 @@ class WebServer(object):
 
         try:
             sock, output = self._make_gevent_listener()
-            log.info('Starting Gevent server on %s', output)
-            self.wsgiserver = WSGIServer(sock, self.app, log=self.access_logger, handler_class=MyWSGIHandler,
-                                         error_log=log,
-                                         spawn=Pool(), **ssl_args)
+            log.info("Starting Gevent server on %s", output)
+            self.wsgiserver = WSGIServer(
+                sock,
+                self.app,
+                log=self.access_logger,
+                handler_class=MyWSGIHandler,
+                error_log=log,
+                spawn=Pool(),
+                **ssl_args,
+            )
             if ssl_args:
                 wrap_socket = self.wsgiserver.wrap_socket
+
                 def my_wrap_socket(*args, **kwargs):
                     try:
                         return wrap_socket(*args, **kwargs)
                     except (ssl.SSLError, OSError) as ex:
-                        log.warning('Gevent SSL Error: %s', ex)
+                        log.warning("Gevent SSL Error: %s", ex)
                         raise GreenletExit
 
                 self.wsgiserver.wrap_socket = my_wrap_socket
@@ -225,24 +256,29 @@ class WebServer(object):
                 self.unix_socket_file = None
 
     def _start_tornado(self):
-        if os.name == 'nt' and sys.version_info > (3, 7):
+        if os.name == "nt" and sys.version_info > (3, 7):
             import asyncio
+
             asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
         try:
             # Max Buffersize set to 200MB
-            http_server = HTTPServer(MyWSGIContainer(self.app),
-                                     max_buffer_size=209700000,
-                                     ssl_options=self.ssl_args)
+            http_server = HTTPServer(
+                MyWSGIContainer(self.app),
+                max_buffer_size=209700000,
+                ssl_options=self.ssl_args,
+            )
 
             unix_socket_file = os.environ.get("CALIBRE_UNIX_SOCKET")
-            if os.environ.get("LISTEN_FDS") and os.name != 'nt':
+            if os.environ.get("LISTEN_FDS") and os.name != "nt":
                 SD_LISTEN_FDS_START = 3
                 sock = socket.socket(fileno=SD_LISTEN_FDS_START)
                 http_server.add_socket(sock)
                 sock.setblocking(0)
-                socket_name =sock.getsockname()
-                output = "systemd-socket:" + _readable_listen_address(socket_name[0], socket_name[1])
-            elif unix_socket_file and os.name != 'nt':
+                socket_name = sock.getsockname()
+                output = "systemd-socket:" + _readable_listen_address(
+                    socket_name[0], socket_name[1]
+                )
+            elif unix_socket_file and os.name != "nt":
                 self._prepare_unix_socket(unix_socket_file)
                 output = "unix:" + unix_socket_file
                 unix_socket = netutil.bind_unix_socket(self.unix_socket_file)
@@ -254,7 +290,7 @@ class WebServer(object):
             else:
                 output = _readable_listen_address(self.listen_address, self.listen_port)
                 http_server.listen(self.listen_port, self.listen_address)
-            log.info('Starting Tornado server on %s', output)
+            log.info("Starting Tornado server on %s", output)
 
             self.wsgiserver = IOLoop.current()
             self.wsgiserver.start()
@@ -281,7 +317,7 @@ class WebServer(object):
             self.wsgiserver = None
 
         # prevent irritating log of pending tasks message from asyncio
-        logger.get('asyncio').setLevel(logger.logging.CRITICAL)
+        logger.get("asyncio").setLevel(logger.logging.CRITICAL)
 
         if not self.restart:
             log.info("Performing shutdown of Calibre-Web Automated")
@@ -294,6 +330,7 @@ class WebServer(object):
     @staticmethod
     def shutdown_scheduler():
         from .services.background_scheduler import BackgroundScheduler
+
         scheduler = BackgroundScheduler()
         if scheduler:
             scheduler.scheduler.shutdown()
@@ -303,10 +340,13 @@ class WebServer(object):
 
     def stop(self, restart=False):
         from . import updater_thread
+        from .services.background_services import _cleanup as _cleanup_bg_services
+
         updater_thread.stop()
 
         log.info("webserver stop (restart=%s)", restart)
         self.shutdown_scheduler()
+        _cleanup_bg_services()
         self.restart = restart
         if self.wsgiserver:
             if _GEVENT:
@@ -315,5 +355,6 @@ class WebServer(object):
                 if restart:
                     self.wsgiserver.call_later(1.0, self.wsgiserver.stop)
                 else:
-                    self.wsgiserver.asyncio_loop.call_soon_threadsafe(self.wsgiserver.stop)
-
+                    self.wsgiserver.asyncio_loop.call_soon_threadsafe(
+                        self.wsgiserver.stop
+                    )

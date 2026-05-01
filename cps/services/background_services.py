@@ -9,6 +9,7 @@
 Starts CWA background services as subprocesses managed by the Flask app.
 """
 
+import atexit
 import logging
 import os
 import signal
@@ -52,10 +53,7 @@ def start_all():
     """
     log.info("Starting CWA background services...")
 
-    try:
-        signal.signal(signal.SIGTERM, _cleanup)
-    except Exception:
-        pass
+    atexit.register(_cleanup)
 
     # One-shot services (block briefly, must complete before watchers start)
     for script in (
