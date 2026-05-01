@@ -33,7 +33,10 @@ from datetime import datetime, timezone
 
 # Import the centralized partial MD5 calculation function
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-from cps.progress_syncing.checksums import calculate_koreader_partial_md5, CHECKSUM_VERSION
+from cps.progress_syncing.checksums import (
+    calculate_koreader_partial_md5,
+    CHECKSUM_VERSION,
+)
 from cps.progress_syncing.settings import is_koreader_sync_enabled
 
 
@@ -44,22 +47,27 @@ def _flush_batch(metadata_db: str, batch_rows):
         conn = sqlite3.connect(metadata_db, timeout=30)
         cur = conn.cursor()
         cur.executemany(
-            '''
+            """
             INSERT INTO book_format_checksums (book, format, checksum, version, created)
             SELECT ?, ?, ?, ?, ?
             WHERE NOT EXISTS (
                 SELECT 1 FROM book_format_checksums
                 WHERE book = ? AND format = ? AND checksum = ?
             )
-            ''',
-            batch_rows
+            """,
+            batch_rows,
         )
         conn.commit()
     finally:
         conn.close()
 
 
-def generate_checksums(library_path: str, books_path: str = None, force: bool = False, batch_size: int = 100):
+def generate_checksums(
+    library_path: str,
+    books_path: str = None,
+    force: bool = False,
+    batch_size: int = 100,
+):
     """Generate checksums for all books in the library
 
     Args:
@@ -71,14 +79,16 @@ def generate_checksums(library_path: str, books_path: str = None, force: bool = 
     if not is_koreader_sync_enabled():
         print("KOReader sync is disabled; skipping checksum generation.")
         return
-    metadata_db = os.path.join(library_path, 'metadata.db')
+    metadata_db = os.path.join(library_path, "metadata.db")
 
     if not os.path.exists(metadata_db):
         print(f"ERROR: Calibre database not found at {metadata_db}")
         sys.exit(1)
 
     # Use books_path if provided and valid, otherwise fall back to library_path
-    base_path = books_path if (books_path and os.path.exists(books_path)) else library_path
+    base_path = (
+        books_path if (books_path and os.path.exists(books_path)) else library_path
+    )
 
     print(f"Connecting to Calibre library at: {library_path}")
     if base_path != library_path:
@@ -96,15 +106,15 @@ def generate_checksums(library_path: str, books_path: str = None, force: bool = 
         cur = conn.cursor()
 
         if force:
-            query = '''
+            query = """
                 SELECT b.id, b.path, b.title, d.format, d.name
                 FROM books b
                 JOIN data d ON b.id = d.book
                 ORDER BY b.id
-            '''
+            """
             formats = cur.execute(query).fetchall()
         else:
-            query = '''
+            query = """
                 SELECT b.id, b.path, b.title, d.format, d.name
                 FROM books b
                 JOIN data d ON b.id = d.book
@@ -114,7 +124,7 @@ def generate_checksums(library_path: str, books_path: str = None, force: bool = 
                 )
                 WHERE bfc.id IS NULL
                 ORDER BY b.id
-            '''
+            """
             formats = cur.execute(query).fetchall()
     except sqlite3.Error as e:
         print(f"ERROR: Database error: {e}")
@@ -139,10 +149,14 @@ def generate_checksums(library_path: str, books_path: str = None, force: bool = 
     for book_id, book_path, title, format_ext, format_name in formats:
         processed += 1
 
-        file_path = os.path.join(base_path, book_path, f"{format_name}.{format_ext.lower()}")
+        file_path = os.path.join(
+            base_path, book_path, f"{format_name}.{format_ext.lower()}"
+        )
 
         if not os.path.exists(file_path):
-            print(f"[{processed}/{total}] SKIP: File not found - {title} ({format_ext})")
+            print(
+                f"[{processed}/{total}] SKIP: File not found - {title} ({format_ext})"
+            )
             skipped += 1
             continue
 
@@ -151,7 +165,18 @@ def generate_checksums(library_path: str, books_path: str = None, force: bool = 
         if checksum:
             created = datetime.now(timezone.utc).isoformat()
             fmt = format_ext.upper()
-            batch_rows.append((book_id, fmt, checksum, CHECKSUM_VERSION, created, book_id, fmt, checksum))
+            batch_rows.append(
+                (
+                    book_id,
+                    fmt,
+                    checksum,
+                    CHECKSUM_VERSION,
+                    created,
+                    book_id,
+                    fmt,
+                    checksum,
+                )
+            )
             queued += 1
 
             if queued % batch_size == 0:
@@ -159,7 +184,9 @@ def generate_checksums(library_path: str, books_path: str = None, force: bool = 
                 batch_rows = []
                 print(f"  → Committed {queued} checksums to database")
         else:
-            print(f"[{processed}/{total}] FAIL: Could not generate checksum - {title} ({format_ext})")
+            print(
+                f"[{processed}/{total}] FAIL: Could not generate checksum - {title} ({format_ext})"
+            )
             failed += 1
 
     if batch_rows:
@@ -178,7 +205,7 @@ def generate_checksums(library_path: str, books_path: str = None, force: bool = 
 def get_books_path():
     """
     Get the split library books path from app.db if split mode is enabled.
-    
+
     Returns:
         The books path from config_calibre_split_dir if it exists and is valid,
         otherwise None to indicate the library path should be used.
@@ -188,17 +215,19 @@ def get_books_path():
         cur = conn.cursor()
 
         # Check if split mode is enabled and get split path
-        result = cur.execute('SELECT config_calibre_split, config_calibre_split_dir FROM settings LIMIT 1;').fetchone()
-        
+        result = cur.execute(
+            "SELECT config_calibre_split, config_calibre_split_dir FROM settings LIMIT 1;"
+        ).fetchone()
+
         if not result:
             return None
-            
+
         split_enabled, split_path = result
-        
+
         # Only return split path if split mode is enabled, path is not NULL, and path exists
         if split_enabled and split_path and os.path.exists(split_path):
             return split_path
-            
+
         return None
 
     except sqlite3.Error as e:
@@ -207,39 +236,39 @@ def get_books_path():
         print(f"WARNING: Falling back to --library-path for books location")
         return None
     finally:
-        if 'conn' in locals():
+        if "conn" in locals():
             conn.close()
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Generate KOReader sync checksums for books in Calibre library',
-        formatter_class=argparse.RawDescriptionHelpFormatter
+        description="Generate KOReader sync checksums for books in Calibre library",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
     parser.add_argument(
-        '--library-path',
-        default='/calibre-library',
-        help='Path to Calibre library directory (default: /calibre-library)'
+        "--library-path",
+        default="/calibre-library",
+        help="Path to Calibre library directory (default: /calibre-library)",
     )
 
     parser.add_argument(
-        '--books-path',
+        "--books-path",
         default=get_books_path(),
-        help='Path to books directory (default: config_calibre_split_dir setting or --library-path)'
+        help="Path to books directory (default: config_calibre_split_dir setting or --library-path)",
     )
 
     parser.add_argument(
-        '--force',
-        action='store_true',
-        help='Regenerate checksums even if they already exist'
+        "--force",
+        action="store_true",
+        help="Regenerate checksums even if they already exist",
     )
 
     parser.add_argument(
-        '--batch-size',
+        "--batch-size",
         type=int,
         default=100,
-        help='Number of books to process before committing (default: 100)'
+        help="Number of books to process before committing (default: 100)",
     )
 
     args = parser.parse_args()
@@ -250,11 +279,13 @@ def main():
         sys.exit(1)
 
     try:
-        generate_checksums(args.library_path, args.books_path, args.force, args.batch_size)
+        generate_checksums(
+            args.library_path, args.books_path, args.force, args.batch_size
+        )
     except KeyboardInterrupt:
         print("\n\nInterrupted by user. Exiting...")
         sys.exit(130)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
