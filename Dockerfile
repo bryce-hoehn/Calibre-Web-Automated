@@ -83,8 +83,8 @@ COPY --from=dependencies /venv /venv
 COPY --from=dependencies /usr/bin/kepubify /usr/bin/kepubify
 COPY --chown=calibre:calibre --from=dependencies /app/calibre /app/calibre
 
-RUN ln -s /venv/bin/python /usr/bin/python
-RUN ln -s /venv/bin/python3 /usr/bin/python3
+# Prepend venv to PATH so 'python'/'python3' resolve to the venv binaries
+ENV PATH=/venv/bin:$PATH
 
 # Runtime packages (single layer: certs + app deps + Calibre GUI deps)
 RUN apt-get update \
