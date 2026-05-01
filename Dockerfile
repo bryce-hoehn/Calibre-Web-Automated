@@ -83,6 +83,9 @@ COPY --from=dependencies /venv /venv
 COPY --from=dependencies /usr/bin/kepubify /usr/bin/kepubify
 COPY --chown=calibre:calibre --from=dependencies /app/calibre /app/calibre
 
+RUN ln -s /venv/bin/python /usr/bin/python
+RUN ln -s /venv/bin/python3 /usr/bin/python3
+
 # Runtime packages (single layer: certs + app deps + Calibre GUI deps)
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
@@ -96,7 +99,6 @@ RUN apt-get update \
       libxslt1.1 \
       xdg-utils \
       inotify-tools \
-      python3 \
       nano \
       sqlite3 \
       zip \
@@ -170,7 +172,7 @@ VOLUME /calibre-library
 
 USER calibre
 
-CMD ["/venv/bin/python", "/app/calibre-web-automated/cps.py"]
+CMD ["python", "/app/calibre-web-automated/cps.py"]
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=120s --retries=3 \
   CMD curl -f http://localhost:${CWA_PORT_OVERRIDE:-8083}/ || curl -f -k https://localhost:${CWA_PORT_OVERRIDE:-8083}/ || exit 1
