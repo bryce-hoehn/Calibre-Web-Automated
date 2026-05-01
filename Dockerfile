@@ -83,6 +83,11 @@ COPY --from=dependencies /venv /venv
 COPY --from=dependencies /usr/bin/kepubify /usr/bin/kepubify
 COPY --chown=calibre:calibre --from=dependencies /app/calibre /app/calibre
 
+# Setup volume folders
+RUN mkdir /config  && chown -R calibre:calibre /config
+RUN mkdir /cwa-book-ingest  && chown -R calibre:calibre /cwa-book-ingest
+RUN mkdir /calibre-library  && chown -R calibre:calibre /calibre-library
+
 # Prepend venv to PATH so 'python'/'python3' resolve to the venv binaries
 ENV PATH=/venv/bin:$PATH
 
