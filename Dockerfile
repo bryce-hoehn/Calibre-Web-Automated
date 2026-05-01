@@ -95,6 +95,7 @@ RUN apt-get update \
       libldap2 \
       libmagic1 \
       libsasl2-2 \
+      python3 \
       libxi6 \
       libxslt1.1 \
       xdg-utils \
